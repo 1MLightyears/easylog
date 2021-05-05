@@ -37,9 +37,8 @@ def Parameters(custom_para: dict = {}):
         "user": getpass.getuser(),
     }
     for i in range(len(d["repr"])):
-        if (d["repr"][i] in user_file.frame.f_locals) and (
-            not callable(user_file.frame.f_locals[d["repr"][i]])
-        ):
+        if (d["repr"][i] in user_file.frame.f_locals) and (not callable(
+                user_file.frame.f_locals[d["repr"][i]])):
             d["repr"][i] = str(user_file.frame.f_locals[d["repr"][i]])
     d["repr"] = "".join(d["repr"])
     d.update(custom_para)

@@ -49,29 +49,32 @@ def easylog_excepthook(exc_type, exc_value, exc_tb):
     if (error_loggers[exc_type] != []) or (error_loggers[BaseException] != []):
         while exc_tb.tb_next:
             exc_tb = exc_tb.tb_next
-        with open(exc_tb.tb_frame.f_code.co_filename, "r", encoding="utf-8") as f:
+        with open(exc_tb.tb_frame.f_code.co_filename, "r",
+                  encoding="utf-8") as f:
             for i in range(exc_tb.tb_frame.f_lineno - 1):
                 f.readline()
             code = f.readline()
         d = Parameters()
-        d.update(
-            {
-                "filefull": exc_tb.tb_frame.f_code.co_filename,
-                "file": os.path.basename(exc_tb.tb_frame.f_code.co_filename),
-                "lineno": exc_tb.tb_frame.f_lineno,
-                "locals": list(exc_tb.tb_frame.f_locals.keys()),
-                "code": code[:],
-                "errtype": str(exc_type)[8:-2],
-                "errvalue": str(exc_value),
-                "function": exc_tb.tb_frame.f_code.co_name[:],
-                "repr": [s for s in re.split(r"\b", code) if s],
-            }
-        )
+        d.update({
+            "filefull": exc_tb.tb_frame.f_code.co_filename,
+            "file": os.path.basename(exc_tb.tb_frame.f_code.co_filename),
+            "lineno": exc_tb.tb_frame.f_lineno,
+            "locals": list(exc_tb.tb_frame.f_locals.keys()),
+            "code": code[:],
+            "errtype": str(exc_type)[8:-2],
+            "errvalue": str(exc_value),
+            "function": exc_tb.tb_frame.f_code.co_name[:],
+            "repr": [s for s in re.split(r"\b", code) if s],
+        })
+
         for i in range(len(d["repr"])):
-            if (d["repr"][i] in exc_tb.tb_frame.f_locals) and (
-                not callable(exc_tb.tb_frame.f_locals[d["repr"][i]])
-            ):
-                d["repr"][i] = str(exc_tb.tb_frame.f_locals[d["repr"][i]])
+            if (d["repr"][i] in exc_tb.tb_frame.f_locals) and (not callable(
+                    exc_tb.tb_frame.f_locals[d["repr"][i]])):
+                val = str(exc_tb.tb_frame.f_locals[d["repr"][i]])
+                if isinstance(exc_tb.tb_frame.f_locals[d["repr"][i]], str):
+                    val = f'"{val}"'
+                d["repr"][i] = val
+
         d["repr"] = "".join(d["repr"])
         d.update(exc_tb.tb_frame.f_locals)
         for l in error_loggers[exc_type] + error_loggers[BaseException]:
